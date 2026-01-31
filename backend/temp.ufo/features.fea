@@ -1,0 +1,13 @@
+languagesystem DFLT dflt;
+languagesystem latn dflt;
+
+feature calt {
+    sub A A' by A.01;
+    sub A.01 A' by A.02;
+    sub B B' by B.01;
+    sub B.01 B' by B.02;
+    sub C C' by C.01;
+    sub C.01 C' by C.02;
+    sub D D' by D.01;
+    sub D.01 D' by D.02;
+} calt;

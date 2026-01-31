@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prueba de Fuente IA</title>
+    <style>
+        /* IMPORTAMOS TU FUENTE DIRECTAMENTE DESDE EL ARCHIVO */
+        @font-face {
+            font-family: 'MiLetraIA';
+            /* Asegúrate de que el nombre del archivo coincida */
+            src: url('build/MiFuenteRaw.otf'); 
+        }
+        
+        body {
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+            text-align: center;
+        }
+
+        .lienzo {
+            background: white;
+            margin: 20px auto;
+            padding: 40px;
+            width: 80%;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .texto-prueba {
+            font-family: 'MiLetraIA';
+            font-size: 80px;
+            color: #333;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+
+        /* AQUÍ ESTÁ EL TRUCO: Forzamos al navegador a usar las variantes */
+        .activado {
+            font-feature-settings: "calt" 1; 
+        }
+        
+        .desactivado {
+            font-feature-settings: "calt" 0;
+        }
+        
+        .instruccion { color: #666; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <h1>Prueba de Variaciones</h1>
+
+    <div class="lienzo">
+        <p class="instruccion">Sin IA (Siempre igual):</p>
+        <div class="texto-prueba desactivado">AAAAA BBBBB</div>
+    </div>
+
+    <div class="lienzo">
+        <p class="instruccion" style="color:blue; font-weight:bold;">Con IA (Variaciones activas):</p>
+        <div class="texto-prueba activado">AAAAA BBBBB</div>
+    </div>
+
+</body>
+</html>
