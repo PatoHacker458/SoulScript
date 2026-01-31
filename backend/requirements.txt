@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+ufoLib2
+opencv-python-headless
+numpy
+fontmake
+python-multipart
