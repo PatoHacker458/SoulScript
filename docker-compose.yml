@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # --- BACKEND (Python) ---
+  backend:
+    build:
+      context: ./backend
+    container_name: soulscript_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+  # --- FRONTEND (React + Nginx) ---
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # AQUÍ ES LA CLAVE: Pon la IP de tu servidor Ubuntu.
+        # Si no lo haces, la Tablet intentará conectarse a "localhost" y fallará.
+        - VITE_API_URL=http://100.78.67.58:8000
+    container_name: soulscript_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80" # Mapeamos el puerto 80 del contenedor al 5173 de tu server
+    depends_on:
+      - backend
