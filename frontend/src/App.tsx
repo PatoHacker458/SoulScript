@@ -8,7 +8,6 @@ interface LetraData {
   svg_path: string
 }
 
-// TU MAPA DE RUTA
 const CARACTERES = [
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
@@ -21,19 +20,16 @@ const CARACTERES = [
 function App() {
   const canvasRef = useRef<ReactSketchCanvasRef>(null)
 
-  // Navegación
   const [indiceChar, setIndiceChar] = useState(0)
   const [varianteActual, setVarianteActual] = useState(0)
   const [coleccion, setColeccion] = useState<LetraData[]>([])
 
-  // UI States
   const [loading, setLoading] = useState(false)
   const [fuenteLista, setFuenteLista] = useState(false)
   const [textoPreview, setTextoPreview] = useState("Escribe aquí para probar tu fuente...")
 
-  // --- NUEVOS ESTADOS PARA SEPARAR DESCARGA ---
-  const [fontFile, setFontFile] = useState<string | null>(null) // Guarda el Base64
-  const [fileName, setFileName] = useState<string>("")          // Guarda el nombre
+  const [fontFile, setFontFile] = useState<string | null>(null)
+  const [fileName, setFileName] = useState<string>("")
 
   const letraActual = CARACTERES[indiceChar];
   const totalPasos = CARACTERES.length;
@@ -69,16 +65,11 @@ function App() {
     }
   }
 
-  // --- ACCIÓN 1: GENERAR Y PROBAR (SIN DESCARGAR) ---
   const generarYProbar = async () => {
     setLoading(true)
     try {
-      // 1. DEFINIMOS LA URL INTELIGENTE
-      // Intenta leer la variable de entorno VITE_API_URL.
-      // Si no existe (ej. en tu PC local), usa 'http://localhost:8000'.
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-      // 2. USAMOS ESA VARIABLE EN LA PETICIÓN (Fíjate en las comillas invertidas ``)
       const response = await axios.post(`${API_URL}/generar-fuente`, {
         letras: coleccion
       })
@@ -86,21 +77,17 @@ function App() {
       const fontData = response.data.font_file;
       const fName = response.data.filename;
 
-      // 1. Inyectar en el navegador (Live Preview)
       const nombreFuente = 'SoulScriptPreview';
-      // Un truco para forzar al navegador a recargar la fuente si la regeneras: añadir un timestamp
       const fontUrl = `data:font/otf;base64,${fontData}`;
       const fontFace = new FontFace(nombreFuente, `url(${fontUrl})`);
 
       await fontFace.load();
-      document.fonts.add(fontFace); // Si ya existe, la actualiza
+      document.fonts.add(fontFace);
 
-      // 2. Guardar en memoria para permitir la descarga luego
       setFontFile(fontData)
       setFileName(fName)
       setFuenteLista(true)
 
-      // 3. Feedback visual
       if (textoPreview === "Escribe aquí para probar tu fuente...") {
         setTextoPreview(`¡Hola! Probando: Aa Bb Cc 123.`);
       }
@@ -112,7 +99,6 @@ function App() {
     setLoading(false)
   }
 
-  // --- ACCIÓN 2: DESCARGAR (SOLO SI YA SE GENERÓ) ---
   const descargarArchivo = () => {
     if (!fontFile) return;
 
@@ -132,7 +118,6 @@ function App() {
 
       <div style={{ width: '100%', maxWidth: '1200px', padding: '20px', fontFamily: "'Segoe UI', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
-        {/* CABECERA */}
         <div style={{ textAlign: 'center', marginBottom: '30px' }}>
           <h1 style={{ fontSize: '3rem', margin: '0 0 10px 0' }}>SoulScript IA ✍️</h1>
           <div style={{ backgroundColor: '#2a2a2a', padding: '10px 25px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '15px' }}>
@@ -148,10 +133,8 @@ function App() {
           </div>
         </div>
 
-        {/* GRID PRINCIPAL */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', justifyContent: 'center', width: '100%', alignItems: 'flex-start' }}>
 
-          {/* COLUMNA 1: LIENZO */}
           <div style={{ flex: '1 1 350px', maxWidth: '450px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <div style={{ width: '100%', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 'bold', color: '#ccc' }}>✏️ Lienzo</span>
@@ -159,7 +142,6 @@ function App() {
             </div>
 
             <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', border: '4px solid #333', backgroundColor: 'white', borderRadius: '15px', overflow: 'hidden' }}>
-              {/* GUÍAS */}
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
                 <div style={{ position: 'absolute', top: '25%', width: '100%', borderTop: '1px dashed rgba(0,0,255,0.3)' }}></div>
                 <div style={{ position: 'absolute', top: '45%', width: '100%', borderTop: '1px dotted rgba(0,0,0,0.2)' }}></div>
@@ -179,7 +161,6 @@ function App() {
             </div>
           </div>
 
-          {/* COLUMNA 2: PREVIEW */}
           <div style={{ flex: '1 1 350px', maxWidth: '450px', display: 'flex', flexDirection: 'column' }}>
             <div style={{ width: '100%', marginBottom: 10, fontWeight: 'bold', color: '#ccc' }}>📝 Vista Previa</div>
             <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', backgroundColor: 'white', borderRadius: '15px', border: '4px solid #333', overflow: 'hidden' }}>
@@ -189,7 +170,6 @@ function App() {
                 placeholder="Escribe aquí..."
                 style={{ width: '100%', height: '100%', padding: '25px', fontSize: '40px', lineHeight: '1.2', color: 'black', backgroundColor: 'transparent', fontFamily: fuenteLista ? 'SoulScriptPreview' : 'sans-serif', border: 'none', resize: 'none', outline: 'none' }}
               />
-              {/* Etiqueta flotante */}
               <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: fuenteLista ? 'rgba(40, 167, 69, 0.9)' : 'rgba(0,0,0,0.1)', color: fuenteLista ? 'white' : '#aaa', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', pointerEvents: 'none' }}>
                 {fuenteLista ? "✅ Live Preview Activo" : "ℹ️ Esperando generación..."}
               </div>
@@ -199,7 +179,6 @@ function App() {
 
         <hr style={{ width: '100%', maxWidth: '800px', margin: '40px 0', borderColor: '#333' }} />
 
-        {/* --- ZONA DE ACCIONES (2 BOTONES) --- */}
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
@@ -209,12 +188,11 @@ function App() {
           marginBottom: '60px'
         }}>
 
-          {/* BOTÓN 1: GENERAR Y PROBAR */}
           <button
             onClick={generarYProbar}
             disabled={coleccion.length === 0 || loading}
             style={{
-              flex: '1 1 250px', // Crece y se adapta, base 250px
+              flex: '1 1 250px',
               maxWidth: '400px',
               fontSize: '1.2rem',
               padding: '18px 30px',
@@ -231,16 +209,14 @@ function App() {
             {loading ? "⚙️ Procesando..." : "⚡ 1. Generar y Probar"}
           </button>
 
-          {/* BOTÓN 2: DESCARGAR (Bloqueado si no hay fuente generada) */}
           <button
             onClick={descargarArchivo}
-            disabled={!fontFile} // SOLO SE ACTIVA SI YA HAY ARCHIVO
+            disabled={!fontFile}
             style={{
               flex: '1 1 250px',
               maxWidth: '400px',
               fontSize: '1.2rem',
               padding: '18px 30px',
-              // Color Naranja para descarga, o Gris si está bloqueado
               backgroundColor: !fontFile ? '#444' : '#fd7e14',
               color: !fontFile ? '#888' : 'white',
               border: 'none',

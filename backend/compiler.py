@@ -5,11 +5,9 @@ import os
 import sys
 import subprocess
 
-# --- CONFIGURACIÓN ---
 NOMBRE_FUENTE = "MiLetraIA"
 CARPETA_SVGS = "output_svgs"
 
-# MAPEO (Asegúrate que coincida con tus archivos)
 MAPEO_LETRAS = {
     'a': 97, 'b': 98, 'c': 99, 'd': 100, 'e': 101,
     'f': 102, 'g': 103, 'h': 104, 'i': 105, 'j': 106,
@@ -40,14 +38,12 @@ def obtener_limites_reales(svg):
     for element in svg.elements():
         if isinstance(element, svgelements.Path):
             for seg in element:
-                # Revisamos el punto final de cada segmento
                 if hasattr(seg, 'end') and seg.end:
                     found = True
                     min_x = min(min_x, seg.end.x)
                     min_y = min(min_y, seg.end.y)
                     max_x = max(max_x, seg.end.x)
                     max_y = max(max_y, seg.end.y)
-                # Revisamos puntos de control si es curva (para mayor precisión)
                 if hasattr(seg, 'control1') and seg.control1:
                     min_y = min(min_y, seg.control1.y)
                     max_y = max(max_y, seg.control1.y)
@@ -114,7 +110,6 @@ def crear_fuente():
         except:
             continue
 
-        # 1. OBTENER DIMENSIONES ORIGINALES
         found, min_x, min_y, max_x, max_y = obtener_limites_reales(svg)
 
         if not found:
@@ -126,22 +121,17 @@ def crear_fuente():
 
         if orig_h <= 0: continue
 
-        # 2. CALCULAR ESCALA Y FACTORES
         TARGET_H = 700
         scale = TARGET_H / orig_h
 
         print(f"[H_orig: {int(orig_h)} -> H_final: 700]")
 
-        # 3. DIBUJADO CON TRANSFORMACIÓN MANUAL (SIN MATRICES)
-        # Fórmula:
-        # X = (Original_X - Min_X) * Scale
-        # Y = (Max_Y - Original_Y) * Scale  <-- ESTO VOLTEA Y CORRIGE POSICIÓN
 
         def tx(val):
             return (val - min_x) * scale
 
         def ty(val):
-            return (max_y - val) * scale  # Inversión explicita
+            return (max_y - val) * scale 
 
         for element in svg.elements():
             if isinstance(element, svgelements.Path):
@@ -168,10 +158,8 @@ def crear_fuente():
                             (tx(seg.end.x), ty(seg.end.y))
                         )
 
-        # Ajustar ancho
         glyph.width = int(orig_w * scale) + 50
 
-    # --- FINALIZAR ---
     print("✨ Generando OpenType...")
     cod_feature = "languagesystem DFLT dflt;\nlanguagesystem latn dflt;\n\nfeature calt {\n"
     for char, vars_list in variaciones.items():

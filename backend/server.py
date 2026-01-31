@@ -35,11 +35,7 @@ def crear_notdef(font):
     pen.lineTo((450, 700)); pen.lineTo((450, 0))
     pen.closePath()
 
-# --- FUNCIÓN MATEMÁTICA NUEVA ---
 def calcular_area_firmada(puntos):
-    # Fórmula Shoelace para determinar la dirección del giro
-    # Area > 0 : Anti-Horario (CCW) -> Para sólidos
-    # Area < 0 : Horario (CW) -> Para agujeros
     area = 0.0
     for i in range(len(puntos)):
         x1, y1 = puntos[i]
@@ -76,34 +72,28 @@ async def generar_fuente(payload: Payload):
         if codepoint: glyph.unicodes = [codepoint]
         
         try:
-            # 1. DECODIFICAR
             header, encoded = item.svg_path.split(",", 1)
             img_bytes = base64.b64decode(encoded)
             nparr = np.frombuffer(img_bytes, np.uint8)
             img = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED)
 
-            # 2. PROCESAR IMAGEN
             if len(img.shape) == 3: gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             elif len(img.shape) == 4: gray = img[:, :, 3] 
             else: gray = img
 
-            # 3. LIMPIEZA
             h, w = gray.shape
             gray = gray[5:h-5, 5:w-5]
-            
-            # Otsu para binarizar
+
             _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
-            # 4. CONTORNOS Y JERARQUÍA
             contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
             
             if not contours:
                 glyph.width = 500
                 continue
             
-            hierarchy = hierarchy[0] # Simplificar array
+            hierarchy = hierarchy[0]
 
-            # 5. ESCALADO
             all_points = np.vstack(contours)
             min_x = float(np.min(all_points[:, :, 0]))
             max_x = float(np.max(all_points[:, :, 0]))
@@ -116,59 +106,43 @@ async def generar_fuente(payload: Payload):
 
             TARGET_H = 700
             scale = TARGET_H / orig_h
-            
-            # Funciones de transformación
+
             def tx(val): return float((val - min_x) * scale)
             def ty(val): return float((max_y - val) * scale) 
 
             pen = glyph.getPen()
             
-            # 6. DIBUJADO CON CONTROL DE DIRECCIÓN (WINDING)
             for i, cnt in enumerate(contours):
                 if cv2.contourArea(cnt) < 30: continue
                 
-                # Calcular profundidad para saber si es agujero
-                # hierarchy[i] = [Next, Prev, Child, Parent]
-                # Recorremos los padres hacia arriba para ver qué tan profundo está
                 depth = 0
                 parent_idx = hierarchy[i][3]
                 while parent_idx != -1:
                     depth += 1
                     parent_idx = hierarchy[parent_idx][3]
                 
-                # Regla par/impar:
-                # Profundidad 0 (Sin padre) = Sólido
-                # Profundidad 1 (Hijo de solido) = Agujero
-                # Profundidad 2 (Hijo de agujero) = Sólido (Isla)
                 es_agujero = (depth % 2 != 0)
 
-                # Simplificar puntos
                 cnt = cv2.approxPolyDP(cnt, 2.0, True)
                 if len(cnt) < 3: continue
                 
-                # TRANSFORMAMOS LOS PUNTOS A COORDENADAS DE FUENTE PRIMERO
                 font_points = []
                 for pt in cnt:
                     px, py = pt[0]
                     font_points.append((tx(px), ty(py)))
 
-                # CALCULAMOS ÁREA MATEMÁTICA
                 area = calcular_area_firmada(font_points)
                 
-                # APLICAMOS LA LÓGICA DE CORRECCIÓN
                 needs_reverse = False
                 
                 if not es_agujero:
-                    # SÓLIDO: Debe ser Anti-Horario (Area > 0)
                     if area < 0: needs_reverse = True
                 else:
-                    # AGUJERO: Debe ser Horario (Area < 0)
                     if area > 0: needs_reverse = True
                 
                 if needs_reverse:
                     font_points = font_points[::-1]
 
-                # DIBUJAR
                 start_pt = font_points[0]
                 pen.moveTo(start_pt)
                 for j in range(1, len(font_points)):
@@ -183,7 +157,6 @@ async def generar_fuente(payload: Payload):
             glyph.width = 500
             continue
 
-    # --- COMPILACIÓN ---
     cod_feature = "languagesystem DFLT dflt;\nlanguagesystem latn dflt;\n\nfeature calt {\n"
     for char, vars_list in variaciones.items():
         if not vars_list: continue

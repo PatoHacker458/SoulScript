@@ -43,9 +43,7 @@ def procesar_hoja(nombre_imagen):
     for i, (cnt, letra_real) in enumerate(zip(contornos_limpios, TEXTO_GUIA)):
         x, y, w, h = cv2.boundingRect(cnt)
 
-        # Padding
         padding = 10
-        # Aseguramos que el recorte no se salga de la imagen
         y1 = max(0, y - padding)
         y2 = min(umbral.shape[0], y + h + padding)
         x1 = max(0, x - padding)
@@ -53,11 +51,7 @@ def procesar_hoja(nombre_imagen):
 
         roi = umbral[y1:y2, x1:x2]
 
-        # --- CORRECCIÓN CRÍTICA ---
-        # Invertimos los colores de nuevo para que Potrace vea:
-        # Letra = NEGRO, Fondo = BLANCO
         roi = cv2.bitwise_not(roi)
-        # --------------------------
 
         archivo_temp = os.path.join(TEMP_FOLDER, f'temp_{i}.bmp')
         cv2.imwrite(archivo_temp, roi)
