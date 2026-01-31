@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { ReactSketchCanvas, type ReactSketchCanvasRef } from 'react-sketch-canvas'
 import axios from 'axios'
 
