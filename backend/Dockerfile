@@ -3,7 +3,7 @@ FROM python:3.9-slim
 
 # Instalamos dependencias del sistema necesarias para compilar fuentes y usar OpenCV
 RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
