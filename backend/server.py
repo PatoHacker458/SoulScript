@@ -57,11 +57,15 @@ async def generar_fuente(payload: Payload):
     variaciones = {}
 
     for item in payload.letras:
-        nombre_glifo = item.caracter
+        # Obtenemos el valor numérico del carácter
         codepoint = ord(item.caracter) if len(item.caracter) == 1 else None
+        
+        # Creamos el nombre seguro usando el estándar uniXXXX (ej. '!' -> uni0021)
+        base_name = f"uni{codepoint:04X}" if codepoint else f"g_{item.caracter}"
+        nombre_glifo = base_name
 
         if item.variante > 0:
-            nombre_glifo = f"{item.caracter}.{item.variante:02d}"
+            nombre_glifo = f"{base_name}.{item.variante:02d}"
             codepoint = None
             if item.caracter not in variaciones: variaciones[item.caracter] = []
             variaciones[item.caracter].append(nombre_glifo)
@@ -100,15 +104,20 @@ async def generar_fuente(payload: Payload):
             min_y = float(np.min(all_points[:, :, 1]))
             max_y = float(np.max(all_points[:, :, 1]))
             
-            orig_h = max_y - min_y
             orig_w = max_x - min_x
-            if orig_h <= 0: continue
+            
+            # 1. EL FIX: Usar la altura total de la imagen (h) como referencia.
+            # Asumimos que todo el lienzo equivale a las 1000 unidades de nuestra fuente.
+            scale = 1000.0 / h
 
-            TARGET_H = 700
-            scale = TARGET_H / orig_h
-
-            def tx(val): return float((val - min_x) * scale)
-            def ty(val): return float((max_y - val) * scale) 
+            # 2. Eje X: Alineamos el trazo a la izquierda y dejamos un pequeño margen de 50.
+            def tx(val): return float((val - min_x) * scale) + 50
+            
+            # 3. Eje Y y FIX de Línea Base: 
+            # Calculamos que el renglón sobre el que se escribe (baseline) 
+            # está al 80% de la altura del canvas (800 unidades de 1000).
+            linea_base_y = h * 0.8
+            def ty(val): return float((linea_base_y - val) * scale)
 
             pen = glyph.getPen()
             
@@ -160,9 +169,14 @@ async def generar_fuente(payload: Payload):
     cod_feature = "languagesystem DFLT dflt;\nlanguagesystem latn dflt;\n\nfeature calt {\n"
     for char, vars_list in variaciones.items():
         if not vars_list: continue
-        cod_feature += f"    sub {char} {char}' by {vars_list[0]};\n"
+        
+        # Reconstruimos el nombre seguro uniXXXX para las reglas de caligrafía
+        codepoint = ord(char) if len(char) == 1 else None
+        base_name = f"uni{codepoint:04X}" if codepoint else f"g_{char}"
+        
+        cod_feature += f"    sub {base_name} {base_name}' by {vars_list[0]};\n"
         for i in range(len(vars_list) - 1):
-            cod_feature += f"    sub {vars_list[i]} {char}' by {vars_list[i+1]};\n"
+            cod_feature += f"    sub {vars_list[i]} {base_name}' by {vars_list[i+1]};\n"
     cod_feature += "} calt;\n"
     font.features.text = cod_feature
 

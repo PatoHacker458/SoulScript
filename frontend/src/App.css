@@ -1,42 +1,318 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Importar tipografía moderna para la interfaz */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-color: #f3f4f6;
+  --sidebar-bg: #ffffff;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  
+  --primary: #000000;
+  --primary-hover: #374151;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --danger: #ef4444;
+  
+  --radius-md: 12px;
+  --radius-lg: 24px;
+}
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text-main);
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}
+
+/* --- ESTRUCTURA PRINCIPAL (FLEXBOX) --- */
+.app-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+/* --- PANEL LATERAL (SIDEBAR) --- */
+.sidebar {
+  width: 340px;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  z-index: 10;
+}
+
+.brand-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0 0 0.25rem 0;
+}
+
+.brand-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Tarjeta de Estado Actual */
+.status-card {
+  background-color: var(--bg-color);
+  padding: 1.5rem;
+  border-radius: var(--radius-md);
   text-align: center;
+  border: 1px solid var(--border-color);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.status-label {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+.current-char {
+  font-size: 3.5rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+  color: var(--accent);
+}
+
+.status-metrics {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.dot-separator {
+  color: #d1d5db;
+}
+
+/* Botones y Controles */
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.action-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary { background-color: var(--primary); color: white; }
+.btn-primary:not(:disabled):hover { background-color: var(--primary-hover); }
+
+.btn-secondary { background-color: #f3f4f6; color: var(--text-main); }
+.btn-secondary:not(:disabled):hover { background-color: #e5e7eb; }
+
+.btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-main); }
+.btn-outline:not(:disabled):hover { background-color: #f9fafb; }
+
+.btn-dark { background-color: var(--text-main); color: white; }
+.btn-dark:not(:disabled):hover { background-color: #000; }
+
+.btn-accent { background-color: var(--accent); color: white; }
+.btn-accent:not(:disabled):hover { background-color: var(--accent-hover); }
+
+.divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+.global-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto; /* Empuja estos botones hacia abajo si hay espacio */
+}
+
+/* --- ESPACIO DE TRABAJO (CENTRAL) --- */
+.workspace {
+  flex: 1;
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background-color: #e5e7eb;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.status-badge.active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+/* Lienzo */
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.sketch-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+/* Líneas Guía Tipográficas (Elegantes) */
+.guidelines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.guide {
+  position: absolute;
+  width: 100%;
+}
+
+.ascender { top: 25%; border-top: 1px dashed #e5e7eb; }
+.x-height { top: 45%; border-top: 1px dashed #e5e7eb; }
+.baseline {
+  top: 80%; /* Ajustado al 80% que programamos en FastAPI */
+  border-top: 1px solid #9ca3af;
+}
+
+.guide-label {
+  position: absolute;
+  right: 12px;
+  top: -20px;
+  font-size: 0.7rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Vista Previa */
+.preview-wrapper {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.preview-textarea {
+  width: 100%;
+  height: 100%;
+  padding: 2.5rem;
+  font-size: 3.5rem;
+  line-height: 1.2;
+  color: var(--text-main);
+  background-color: transparent;
+  border: none;
+  resize: none;
+  outline: none;
+}
+
+.preview-textarea::placeholder {
+  color: #d1d5db;
+}
+
+/* --- RESPONSIVIDAD (MOBILE-FIRST APPROACH) --- */
+@media (max-width: 900px) {
+  .app-layout {
+    flex-direction: column;
   }
-  to {
-    transform: rotate(360deg);
+  
+  .sidebar {
+    width: 100%;
+    order: 2; /* En celular, los controles van al final */
+    border-right: none;
+    border-top: 1px solid var(--border-color);
+    padding: 2rem 1.5rem;
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .workspace {
+    order: 1; /* El lienzo se mantiene arriba */
+    padding: 1.5rem;
   }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  
+  .action-row {
+    flex-direction: column;
+  }
+  
+  .workspace-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }

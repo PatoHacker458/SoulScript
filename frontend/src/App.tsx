@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { ReactSketchCanvas, type ReactSketchCanvasRef } from 'react-sketch-canvas'
 import axios from 'axios'
+import './App.css'
 
 interface LetraData {
   caracter: string
@@ -14,7 +15,7 @@ const CARACTERES = [
   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  '.', ',', '!', '?', '-', '@', ' '
+  '.', ',', '!', '?', '-', '@', ':', ';', "'", '"', '(', ')', '[', ']', '{', '}', '+', '=', '/', '*', '&', '^', '%', '$', '#', '<', '>', ' '
 ];
 
 function App() {
@@ -60,7 +61,7 @@ function App() {
         setIndiceChar(indiceChar + 1)
         setVarianteActual(0)
       } else {
-        alert("¡Has terminado todo el alfabeto! 🎉")
+        alert("Proceso completado: Has terminado todo el alfabeto.")
       }
     }
   }
@@ -89,19 +90,18 @@ function App() {
       setFuenteLista(true)
 
       if (textoPreview === "Escribe aquí para probar tu fuente...") {
-        setTextoPreview(`¡Hola! Probando: Aa Bb Cc 123.`);
+        setTextoPreview(`Hola Mundo. Probando: Aa Bb Cc 123.`);
       }
 
     } catch (error) {
       console.error("Error", error)
-      alert("Error al conectar con el backend.")
+      alert("Error al conectar con el motor de compilación.")
     }
     setLoading(false)
   }
 
   const descargarArchivo = () => {
     if (!fontFile) return;
-
     const link = document.createElement('a')
     link.href = `data:font/otf;base64,${fontFile}`
     link.download = fileName
@@ -109,131 +109,112 @@ function App() {
   }
 
   return (
-    <>
-      <style>{`
-        body, html, #root { margin: 0; padding: 0; width: 100%; min-height: 100vh; background-color: #1a1a1a; color: #eee; }
-        #root { display: flex; flex-direction: column; alignItems: center; justify-content: flex-start; }
-        * { box-sizing: border-box; }
-      `}</style>
+    <div className="app-layout">
+      {/* PANEL LATERAL: CONTROLES */}
+      <aside className="sidebar">
+        <div className="brand-header">
+          <h1>SoulScript</h1>
+          <p>Motor Tipográfico</p>
+        </div>
 
-      <div style={{ width: '100%', maxWidth: '1200px', padding: '20px', fontFamily: "'Segoe UI', sans-serif", display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <h1 style={{ fontSize: '3rem', margin: '0 0 10px 0' }}>SoulScript IA ✍️</h1>
-          <div style={{ backgroundColor: '#2a2a2a', padding: '10px 25px', borderRadius: '20px', display: 'inline-flex', alignItems: 'center', gap: '15px' }}>
-            <h2 style={{ margin: 0, fontSize: '1.2rem' }}>
-              Dibujando: <span style={{ fontSize: '1.4em', color: '#4da6ff', fontWeight: 'bold' }}>
-                {letraActual === ' ' ? '(Espacio)' : letraActual}
-              </span>
-            </h2>
-            <span style={{ width: '1px', height: '20px', backgroundColor: '#555' }}></span>
-            <p style={{ margin: 0, color: '#aaa', fontSize: '0.9rem' }}>Variante {varianteActual + 1}/3</p>
-            <span style={{ width: '1px', height: '20px', backgroundColor: '#555' }}></span>
-            <p style={{ margin: 0, color: '#aaa', fontSize: '0.9rem' }}>Progreso: {indiceChar + 1}/{totalPasos}</p>
+        <div className="status-card">
+          <p className="status-label">Dibujando carácter</p>
+          <h2 className="current-char">
+            {letraActual === ' ' ? '(Espacio)' : letraActual}
+          </h2>
+          <div className="status-metrics">
+            <span>Variante {varianteActual + 1}/3</span>
+            <span className="dot-separator">•</span>
+            <span>Progreso {indiceChar + 1}/{totalPasos}</span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', justifyContent: 'center', width: '100%', alignItems: 'flex-start' }}>
-
-          <div style={{ flex: '1 1 350px', maxWidth: '450px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <div style={{ width: '100%', marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 'bold', color: '#ccc' }}>✏️ Lienzo</span>
-              <button onClick={() => canvasRef.current?.clearCanvas()} style={{ background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer' }}>🗑️ Borrar</button>
-            </div>
-
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', border: '4px solid #333', backgroundColor: 'white', borderRadius: '15px', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 10 }}>
-                <div style={{ position: 'absolute', top: '25%', width: '100%', borderTop: '1px dashed rgba(0,0,255,0.3)' }}></div>
-                <div style={{ position: 'absolute', top: '45%', width: '100%', borderTop: '1px dotted rgba(0,0,0,0.2)' }}></div>
-                <div style={{ position: 'absolute', top: '75%', width: '100%', borderTop: '2px solid rgba(255,0,0,0.4)' }}></div>
-                <span style={{ position: 'absolute', top: '76%', right: '10px', fontSize: '10px', color: 'red', opacity: 0.5 }}>Línea Base</span>
-              </div>
-              <ReactSketchCanvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, zIndex: 1 }} strokeWidth={20} strokeColor="black" canvasColor="white" width="100%" height="100%" />
-            </div>
-
-            <div style={{ display: 'flex', gap: 10, width: '100%', marginTop: 20 }}>
-              <button onClick={saltarLetra} style={{ flex: 1, padding: '15px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: '#555', color: 'white', border: 'none', borderRadius: '10px' }}>
-                ⏭️ Saltar
-              </button>
-              <button onClick={guardarLetra} style={{ flex: 2, padding: '15px', fontWeight: 'bold', fontSize: '1.1rem', cursor: 'pointer', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '10px', boxShadow: '0 4px 0 #1e7e34' }}>
-                Siguiente 👉
-              </button>
-            </div>
+        <div className="action-group">
+          <button className="btn btn-secondary" onClick={() => canvasRef.current?.clearCanvas()}>
+            Borrar Lienzo
+          </button>
+          <div className="action-row">
+            <button className="btn btn-outline" onClick={saltarLetra}>
+              Saltar
+            </button>
+            <button className="btn btn-primary" onClick={guardarLetra}>
+              Siguiente
+            </button>
           </div>
+        </div>
 
-          <div style={{ flex: '1 1 350px', maxWidth: '450px', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ width: '100%', marginBottom: 10, fontWeight: 'bold', color: '#ccc' }}>📝 Vista Previa</div>
-            <div style={{ position: 'relative', width: '100%', aspectRatio: '1 / 1', backgroundColor: 'white', borderRadius: '15px', border: '4px solid #333', overflow: 'hidden' }}>
+        <div className="divider"></div>
+
+        <div className="global-actions">
+          <button 
+            className="btn btn-dark" 
+            onClick={generarYProbar} 
+            disabled={coleccion.length === 0 || loading}
+          >
+            {loading ? "Procesando vectores..." : "Generar y Probar"}
+          </button>
+          <button 
+            className="btn btn-accent" 
+            onClick={descargarArchivo} 
+            disabled={!fontFile}
+          >
+            Descargar Archivo .OTF
+          </button>
+        </div>
+      </aside>
+
+      {/* ÁREA CENTRAL: LIENZO Y VISTA PREVIA */}
+      <main className="workspace">
+        <div className="workspace-grid">
+          
+          {/* SECCIÓN DEL LIENZO */}
+          <section className="panel canvas-panel">
+            <div className="panel-header">
+              <h3>Lienzo de captura</h3>
+            </div>
+            <div className="canvas-wrapper">
+              {/* Líneas Guía Tipográficas */}
+              <div className="guidelines">
+                <div className="guide ascender"></div>
+                <div className="guide x-height"></div>
+                <div className="guide baseline">
+                  <span className="guide-label">Línea base</span>
+                </div>
+              </div>
+              
+              <ReactSketchCanvas 
+                ref={canvasRef} 
+                className="sketch-canvas"
+                strokeWidth={18} 
+                strokeColor="#000000" 
+                canvasColor="#ffffff" 
+              />
+            </div>
+          </section>
+
+          {/* SECCIÓN DE VISTA PREVIA */}
+          <section className="panel preview-panel">
+            <div className="panel-header">
+              <h3>Prueba de renderizado</h3>
+              <span className={`status-badge ${fuenteLista ? 'active' : ''}`}>
+                {fuenteLista ? 'En vivo' : 'Inactivo'}
+              </span>
+            </div>
+            <div className="preview-wrapper">
               <textarea
                 value={textoPreview}
                 onChange={(e) => setTextoPreview(e.target.value)}
                 placeholder="Escribe aquí..."
-                style={{ width: '100%', height: '100%', padding: '25px', fontSize: '40px', lineHeight: '1.2', color: 'black', backgroundColor: 'transparent', fontFamily: fuenteLista ? 'SoulScriptPreview' : 'sans-serif', border: 'none', resize: 'none', outline: 'none' }}
+                spellCheck="false"
+                style={{ fontFamily: fuenteLista ? 'SoulScriptPreview' : 'inherit' }}
+                className="preview-textarea"
               />
-              <div style={{ position: 'absolute', bottom: '15px', right: '15px', backgroundColor: fuenteLista ? 'rgba(40, 167, 69, 0.9)' : 'rgba(0,0,0,0.1)', color: fuenteLista ? 'white' : '#aaa', padding: '5px 10px', borderRadius: '5px', fontSize: '0.8rem', pointerEvents: 'none' }}>
-                {fuenteLista ? "✅ Live Preview Activo" : "ℹ️ Esperando generación..."}
-              </div>
             </div>
-          </div>
+          </section>
+
         </div>
-
-        <hr style={{ width: '100%', maxWidth: '800px', margin: '40px 0', borderColor: '#333' }} />
-
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '20px',
-          justifyContent: 'center',
-          width: '100%',
-          marginBottom: '60px'
-        }}>
-
-          <button
-            onClick={generarYProbar}
-            disabled={coleccion.length === 0 || loading}
-            style={{
-              flex: '1 1 250px',
-              maxWidth: '400px',
-              fontSize: '1.2rem',
-              padding: '18px 30px',
-              backgroundColor: loading ? 'gray' : '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '15px',
-              cursor: loading || coleccion.length === 0 ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              boxShadow: '0 4px 15px rgba(0,123,255,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
-            }}
-          >
-            {loading ? "⚙️ Procesando..." : "⚡ 1. Generar y Probar"}
-          </button>
-
-          <button
-            onClick={descargarArchivo}
-            disabled={!fontFile}
-            style={{
-              flex: '1 1 250px',
-              maxWidth: '400px',
-              fontSize: '1.2rem',
-              padding: '18px 30px',
-              backgroundColor: !fontFile ? '#444' : '#fd7e14',
-              color: !fontFile ? '#888' : 'white',
-              border: 'none',
-              borderRadius: '15px',
-              cursor: !fontFile ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              boxShadow: !fontFile ? 'none' : '0 4px 15px rgba(253, 126, 20, 0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-              transition: 'all 0.3s'
-            }}
-          >
-            {!fontFile ? "🔒 Descarga Bloqueada" : "💾 2. Descargar .OTF"}
-          </button>
-        </div>
-
-      </div>
-    </>
+      </main>
+    </div>
   )
 }
 
